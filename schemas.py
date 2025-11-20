@@ -12,9 +12,9 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
-# Example schemas (replace with your own):
+# Example schemas (kept for reference):
 
 class User(BaseModel):
     """
@@ -38,11 +38,36 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# RTU Canteen app schemas
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class MenuItem(BaseModel):
+    """
+    Canteen menu items
+    Collection name: "menuitem"
+    """
+    name: str = Field(..., description="Item name")
+    category: str = Field(..., description="Category e.g., Beverages, Fast Food")
+    price: float = Field(..., ge=0, description="Price in INR")
+    description: Optional[str] = Field(None, description="Short description")
+    image_url: Optional[str] = Field(None, description="Image URL")
+    is_available: bool = Field(True, description="Whether item is available 24x7")
+
+class OrderItem(BaseModel):
+    item_id: str = Field(..., description="Menu item id")
+    name: str
+    qty: int = Field(..., ge=1)
+    price: float = Field(..., ge=0)
+
+class Order(BaseModel):
+    """
+    Orders placed by students staying in RTU hostels
+    Collection name: "order"
+    """
+    customer_name: str
+    phone: str
+    hostel: str = Field(..., description="Hostel name")
+    room: str = Field(..., description="Room number")
+    delivery_instructions: Optional[str] = None
+    items: List[OrderItem]
+    total_amount: float = Field(..., ge=0)
+    status: str = Field("pending", description="pending | confirmed | out_for_delivery | delivered | cancelled")
